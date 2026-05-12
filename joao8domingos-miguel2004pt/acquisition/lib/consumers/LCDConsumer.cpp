@@ -89,7 +89,8 @@ void LCDConsumer::consume(const topic_t& topic)
             snprintf(buf, sizeof(buf), "%.1f°", last_steering);
             lv_label_set_text(label_steer_val, buf); // Atualiza o label de ângulo de direção no dashboard com o novo valor recebido. A função lv_label_set_text() é usada para definir o texto do label, e snprintf() é utilizado para formatar a string com o valor do ângulo de direção, garantindo que seja exibida de forma legível e consistente no display.
             break;
-        case PRODUCER_ID_CPU_USAGE:
+        case PRODUCER_ID_CPU_CORE_0:
+        case PRODUCER_ID_CPU_CORE_1:
         case PRODUCER_ID_QUEUE_SIZE:
         case PRODUCER_ID_TICK_HEALTH:
             break;
