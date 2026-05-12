@@ -117,9 +117,22 @@ void MQTTConsumer::consume(const topic_t& t)
         base_set          = true;
     }
 
+    //se o delta a meio ficar com um valor superior ao 0xFFFF, é necessaário enviar o pacote que se estava a criar e 
     if (t.timestamp_us - base_timestamp_us > 0xFFFF) {
+        // Fazer flush do buffer antes de mudar a base
+        if (count > 0) {
+            memcpy(buffer, &base_timestamp_us, sizeof(uint64_t));
+            int payload_size = (int)(sizeof(uint64_t) + buffer_offset);
+            esp_mqtt_client_publish(mqtt_client, topic,
+                                    (const char *)buffer, payload_size, 1, 0);
+            count         = 0;
+            buffer_offset = 0;
+            memset(buffer, 0, sizeof(buffer));
+        }
         base_timestamp_us = t.timestamp_us;
     }
+
+
 
     packTopic(t);
     count++;
