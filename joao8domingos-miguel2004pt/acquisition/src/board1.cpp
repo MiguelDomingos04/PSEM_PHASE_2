@@ -20,7 +20,7 @@
 extern "C" void app_main(void)
 {
     // 6 producers (5 sensores + CANRXProducer), 3 consumers (LCD + MQTT + CANTXConsumer)
-    static TelemetryManager<2, 1, 20> manager;
+    static TelemetryManager<3, 1, 20> manager;
 
     // Producers locais + CANRXProducer que recebe dados do outro ESP32 via CAN
     static VoltageProducer       voltageProducer(true);
