@@ -72,6 +72,7 @@ void CANTXConsumer::sendSync()
     ESP_LOGI(TAG, "Sync enviado — base_ts=%llu", base_timestamp_us);
 }
 
+/*
 // sendTopic 
 // Igual ao send_message() da Phase 1 mas com protocolo otimizado:
 //   CAN ID  = producer_id (no header — não gasta payload)
@@ -113,6 +114,55 @@ void CANTXConsumer::sendTopic(const topic_t& t)
     ESP_LOGI(TAG, "CAN TX — id=0x%02X delta=%u val_scaled=%u",
              t.producer_id, delta_us, value_scaled);
 }
+*/
+
+void CANTXConsumer::sendTopic(const topic_t& t)
+{
+    if (t.timestamp_us < base_timestamp_us) {
+        base_timestamp_us = t.timestamp_us;
+        sendSync();
+    }
+
+    uint64_t delta = t.timestamp_us - base_timestamp_us;
+    if (delta > 0xFFFF) {
+        base_timestamp_us = t.timestamp_us;
+        sendSync();
+        delta = 0;
+    }
+
+    uint16_t delta_us     = (uint16_t)delta;
+    uint16_t value_scaled = scaleValue(t.producer_id, t.value);
+
+    uint8_t buf[6];
+    memcpy(buf,     &delta_us,     sizeof(uint16_t));
+    memcpy(buf + 2, &value_scaled, sizeof(uint16_t));
+
+    uint8_t payload_len;
+    if (TOPIC_IS_METRIC(t.producer_id)) {
+        memcpy(buf + 4, &t.device_id, sizeof(uint16_t));
+        payload_len = 6;  // 4 + device_id
+    } else {
+        payload_len = 4;  // sem device_id
+    }
+
+    twai_frame_t tx_msg = {
+        .header.id  = t.producer_id,
+        .header.ide = false,
+        .buffer     = buf,
+        .buffer_len = payload_len,
+    };
+    ESP_ERROR_CHECK(twai_node_transmit(node_hdl, &tx_msg, 0));
+    ESP_ERROR_CHECK(twai_node_transmit_wait_all_done(node_hdl, -1));
+
+    ESP_LOGI(TAG, "CAN TX — id=0x%02X delta=%u val_scaled=%u len=%u",
+             t.producer_id, delta_us, value_scaled, payload_len);
+}
+
+
+
+
+
+
 
 // scaleValue 
 // Converte float → uint16_t com fator de escala por sensor.
@@ -135,7 +185,8 @@ uint16_t CANTXConsumer::scaleValue(uint8_t producer_id, float value)
 
         case PRODUCER_ID_STEERING:
             return (uint16_t)((value + 180.0f) * 100.0f); // offset +180 para negativos
-        case PRODUCER_ID_CPU_USAGE:
+        case PRODUCER_ID_CPU_CORE_0:
+        case PRODUCER_ID_CPU_CORE_1:
             return (uint16_t)(value * 10.0f);     // 0–100% → 0–1000
 
         case PRODUCER_ID_QUEUE_SIZE:

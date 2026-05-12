@@ -53,12 +53,13 @@ void MQTTConsumer::setup()
 // Igual à Phase 1 — orientado a eventos via consume()
 void MQTTConsumer::run()
 {
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(10));
 }
 
 //  consume 
 // Igual à Phase 1 mas com formato otimizado — acumula no buffer e publica
 // quando atinge o threshold
+/*
 void MQTTConsumer::consume(const topic_t& t)
 {
     // Primeiro topic define o timestamp base
@@ -107,6 +108,81 @@ void MQTTConsumer::consume(const topic_t& t)
         memset(buffer, 0, sizeof(buffer));
     }
 }
+*/
+
+void MQTTConsumer::consume(const topic_t& t)
+{
+    if (!base_set) {
+        base_timestamp_us = t.timestamp_us;
+        base_set          = true;
+    }
+
+    if (t.timestamp_us - base_timestamp_us > 0xFFFF) {
+        base_timestamp_us = t.timestamp_us;
+    }
+
+    packTopic(t);
+    count++;
+
+    ESP_LOGI(TAG, "[%lu/%d] id=0x%02X delta=%llu val=%.2f device=0x%04X",
+             (unsigned long)count, BUFFER_THRESHOLD,
+             t.producer_id,
+             t.timestamp_us - base_timestamp_us,
+             t.value,
+             t.device_id);
+
+    if (count >= BUFFER_THRESHOLD) {
+        memcpy(buffer, &base_timestamp_us, sizeof(uint64_t));
+
+        // Tamanho real do payload = timestamp base + bytes acumulados
+        int payload_size = (int)(sizeof(uint64_t) + buffer_offset);
+
+        int msg_id = esp_mqtt_client_publish(
+            mqtt_client, topic,
+            (const char *)buffer, payload_size,
+            1, 0
+        );
+
+        if (msg_id >= 0) {
+            ESP_LOGI(TAG, "Buffer publicado — %d bytes → %s (msg_id=%d)",
+                     payload_size, topic, msg_id);
+        } else {
+            ESP_LOGE(TAG, "Falha ao publicar — msg_id=%d", msg_id);
+        }
+
+        count         = 0;
+        buffer_offset = 0;
+        base_set      = false;
+        memset(buffer, 0, sizeof(buffer));
+    }
+}
+
+
+
+// Formato variável:
+//   Sensor:  [id:1][delta:2][value:2]           — 5 bytes, device_id não enviado
+//   Métrica: [id:1][delta:2][value:2][device:2] — 7 bytes, device_id enviado
+void MQTTConsumer::packTopic(const topic_t& t)
+{
+    uint8_t *ptr = buffer + sizeof(uint64_t) + buffer_offset;
+
+    uint16_t delta_us     = (uint16_t)(t.timestamp_us - base_timestamp_us);
+    uint16_t value_scaled = scaleValue(t.producer_id, t.value);
+
+    ptr[0] = t.producer_id;
+    memcpy(ptr + 1, &delta_us,     sizeof(uint16_t));
+    memcpy(ptr + 3, &value_scaled, sizeof(uint16_t));
+
+    if (TOPIC_IS_METRIC(t.producer_id)) {
+        memcpy(ptr + 5, &t.device_id, sizeof(uint16_t));
+        buffer_offset += FIELD_SIZE_METRIC;  // +7
+    } else {
+        buffer_offset += FIELD_SIZE_SENSOR;  // +5
+    }
+}
+
+
+
 
 //  packTopic 
 // Formato otimizado (5 bytes por topic):
@@ -117,6 +193,7 @@ void MQTTConsumer::consume(const topic_t& t)
 // Comparação com Phase 1:
 //   Phase 1:  [id:1][timestamp_ms:4][value:4] = 9 bytes
 //   Atual:    [id:1][delta_us:2][value:2]      = 5 bytes
+/*
 void MQTTConsumer::packTopic(const topic_t& t)
 {
     
@@ -128,6 +205,7 @@ void MQTTConsumer::packTopic(const topic_t& t)
     memcpy(ptr + 1, &delta_us,     sizeof(uint16_t));
     memcpy(ptr + 3, &value_scaled, sizeof(uint16_t));
 }
+*/
 
 //  scaleValue 
 // Igual ao CANTXConsumer — converte float para uint16_t preservando casas decimais
@@ -149,7 +227,8 @@ uint16_t MQTTConsumer::scaleValue(uint8_t producer_id, float value)
         case PRODUCER_ID_STEERING:
             return (uint16_t)((value + 180.0f) * 100.0f); // offset +180 para negativos
         
-        case PRODUCER_ID_CPU_USAGE:
+        case PRODUCER_ID_CPU_CORE_0:
+        case PRODUCER_ID_CPU_CORE_1:
             return (uint16_t)(value * 10.0f);    // 0–100% → 0–1000
 
         case PRODUCER_ID_QUEUE_SIZE:

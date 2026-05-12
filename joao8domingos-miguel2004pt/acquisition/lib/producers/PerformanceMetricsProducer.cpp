@@ -2,7 +2,7 @@
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "freertos/task.h"
-
+#include "esp_mac.h"
 #define TAG "PerformanceMetrics"
 
 // Força a visibilidade das funções de Stats do FreeRTOS
@@ -15,8 +15,19 @@ PerformanceMetricsProducer::PerformanceMetricsProducer(uint32_t sample_ms)
     : Producer(PRODUCER_ID_CPU_CORE_0), sample_ms(sample_ms)
 {}
 
+// Reduz os 6 bytes do Base MAC para 2 bytes via XOR fold
+uint16_t PerformanceMetricsProducer::computeDeviceId()
+{
+    uint8_t mac[6];
+    esp_efuse_mac_get_default(mac);
+    return ((uint16_t)mac[0] << 8 | mac[1]) ^
+           ((uint16_t)mac[2] << 8 | mac[3]) ^
+           ((uint16_t)mac[4] << 8 | mac[5]);
+}
+
 void PerformanceMetricsProducer::setup()
 {
+    device_id = computeDeviceId();
     ESP_LOGI(TAG, "PerformanceMetricsProducer inicializado — Monitorização Dual Core ativa");
 }
 
@@ -47,6 +58,7 @@ void PerformanceMetricsProducer::sendMetric(uint8_t metric_id, float value)
         .producer_id  = metric_id,
         .timestamp_us = static_cast<uint64_t>(esp_timer_get_time()),
         .value        = value,
+        .device_id    = device_id,  // != 0 → consumers serializam os 2 bytes extra
     };
 
     if (xQueueSend(destinationQueue, &topic, 0) != pdTRUE) {

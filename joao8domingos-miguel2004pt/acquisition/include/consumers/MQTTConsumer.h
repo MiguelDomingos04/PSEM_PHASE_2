@@ -16,13 +16,15 @@ private:
     esp_mqtt_client_handle_t mqtt_client = nullptr;
 
     // Formato otimizado por topic: [id: 1][delta_us: 2][value_scaled: 2] = 5 bytes
-    static constexpr int FIELD_SIZE       = 1 + 2 + 2;
-    static constexpr int BUFFER_THRESHOLD = 10;
+    static constexpr int FIELD_SIZE_SENSOR = 5;
+    static constexpr int FIELD_SIZE_METRIC = 7;
+    static constexpr int BUFFER_THRESHOLD  = 10;
     //static constexpr int BUFFER_SIZE      = BUFFER_THRESHOLD * FIELD_SIZE;
-    static constexpr int BUFFER_SIZE = sizeof(uint64_t) + BUFFER_THRESHOLD * FIELD_SIZE; // espaço extra para o timestamp base
+    static constexpr int BUFFER_SIZE = sizeof(uint64_t) + BUFFER_THRESHOLD * FIELD_SIZE_METRIC; // espaço extra para o timestamp base
 
     uint8_t  buffer[BUFFER_SIZE];
     uint32_t count = 0;
+    uint32_t buffer_offset = 0;   // bytes escritos após o timestamp base
 
     // Timestamp base para calcular delta — igual ao CANTXConsumer
     uint64_t base_timestamp_us = 0;

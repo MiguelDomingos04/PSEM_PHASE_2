@@ -7,9 +7,16 @@
 #define PRODUCER_ID_TEMP     0x03
 #define PRODUCER_ID_SPEED    0x04
 #define PRODUCER_ID_STEERING  0x05 
-#define PRODUCER_ID_CPU_USAGE   0x06
+#define PRODUCER_ID_CPU_CORE_0  0x06
 #define PRODUCER_ID_QUEUE_SIZE  0x07
-#define PRODUCER_ID_TICK_HEALTH 0x08 
+#define PRODUCER_ID_TICK_HEALTH 0x08
+#define PRODUCER_ID_CPU_CORE_1  0x09
+
+// Verdadeiro para qualquer producer_id que seja métrica
+#define TOPIC_IS_METRIC(id) ((id) == PRODUCER_ID_CPU_CORE_0 || \
+                             (id) == PRODUCER_ID_CPU_CORE_1 || \
+                             (id) == PRODUCER_ID_QUEUE_SIZE  || \
+                             (id) == PRODUCER_ID_TICK_HEALTH)
 
 
 // Estrutura que viaja na queue entre producers e consumers
@@ -21,4 +28,5 @@ struct topic_t {
     uint8_t  producer_id;   // 1 byte  — ID do producer
     uint64_t timestamp_us;  // 8 bytes — timestamp em microssegundos
     float    value;         // 4 bytes — valor do campo
+    uint16_t device_id = 0;  // 2 bytes — 0 = sensor, != 0 = métrica
 };

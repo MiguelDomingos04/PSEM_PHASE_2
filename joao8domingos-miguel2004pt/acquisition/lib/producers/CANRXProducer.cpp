@@ -92,6 +92,7 @@ void CANRXProducer::handleSync(const CanFrame& frame)
 //  handleTopic 
 // Igual ao switch(frame.id) da Phase 1 mas reconstrói topic_t
 // em vez de fazer ESP_LOGI — coloca na queue central do TelemetryManager
+/*
 void CANRXProducer::handleTopic(const CanFrame& frame)
 {
     if (frame.data_len < 4) return;
@@ -115,6 +116,45 @@ void CANRXProducer::handleTopic(const CanFrame& frame)
              topic.producer_id, delta_us, topic.value);
 }
 
+*/
+
+
+
+
+
+void CANRXProducer::handleTopic(const CanFrame& frame)
+{
+    if (frame.data_len < 4) return;
+
+    uint16_t delta_us, value_scaled;
+    memcpy(&delta_us,     frame.data,     sizeof(uint16_t));
+    memcpy(&value_scaled, frame.data + 2, sizeof(uint16_t));
+
+    // device_id só existe no payload para métricas (6 bytes)
+    uint16_t device_id = 0;
+    if (frame.data_len >= 6) {
+        memcpy(&device_id, frame.data + 4, sizeof(uint16_t));
+    }
+
+    topic_t topic = {
+        .producer_id  = (uint8_t)frame.id,
+        .timestamp_us = base_timestamp_us + delta_us,
+        .value        = unscaleValue((uint8_t)frame.id, value_scaled),
+        .device_id    = device_id,
+    };
+
+    if (xQueueSend(destinationQueue, &topic, 0) != pdTRUE) {
+        ESP_LOGW(TAG, "Queue cheia — frame CAN descartada");
+    }
+
+    ESP_LOGI(TAG, "CAN RX — id=0x%02X delta=%u val=%.2f device=0x%04X",
+             topic.producer_id, delta_us, topic.value, topic.device_id);
+}
+
+
+
+
+
 // unscaleValue 
 // Inverte a escala do sender para recuperar o valor físico original
 float CANRXProducer::unscaleValue(uint8_t producer_id, uint16_t scaled)
@@ -135,7 +175,8 @@ float CANRXProducer::unscaleValue(uint8_t producer_id, uint16_t scaled)
         case PRODUCER_ID_STEERING:
             return (scaled / 100.0f) - 180.0f;
 
-        case PRODUCER_ID_CPU_USAGE:
+        case PRODUCER_ID_CPU_CORE_0:
+        case PRODUCER_ID_CPU_CORE_1:
             return scaled / 10.0f;    // 0–1000 → 0–100%
 
         case PRODUCER_ID_QUEUE_SIZE:

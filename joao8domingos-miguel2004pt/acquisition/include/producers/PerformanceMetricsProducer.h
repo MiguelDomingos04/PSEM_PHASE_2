@@ -14,6 +14,7 @@
 class PerformanceMetricsProducer : public Producer {
 private:
     uint32_t sample_ms;
+    uint16_t   device_id = 0;   // hash XOR do Base MAC, calculado no setup()
 
     // Armazenamento dos estados de CPU para ambos os núcleos
     uint32_t last_idle_ticks[2]  = {0, 0};
@@ -24,6 +25,7 @@ private:
     bool       first_run      = true;
 
     // Métodos internos de processamento
+    uint16_t computeDeviceId();                     // XOR fold dos 6 bytes do MAC
     void  sendMetric(uint8_t metric_id, float value);
     float estimateCpuUsage(int core_id); 
     float getTickHealth();
