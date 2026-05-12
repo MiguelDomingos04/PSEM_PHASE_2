@@ -1,0 +1,11 @@
+# LVGL — fontes necessárias para o LCD dashboard
+CONFIG_LV_FONT_MONTSERRAT_14=y
+
+# FreeRTOS — necessário para o PerformanceMetricsProducer
+CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
+CONFIG_FREERTOS_USE_TRACE_FACILITY=y
+
+# Flash size
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="boards/esp32-s3-devkit/large_factory.csv"

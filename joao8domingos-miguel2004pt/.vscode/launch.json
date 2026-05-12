@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/miguel/Desktop/IST/SPEM/Phase2/joao8domingos-miguel2004pt/acquisition/src/consumers",
+      "program": "/Users/miguel/Desktop/IST/SPEM/Phase2/joao8domingos-miguel2004pt/acquisition/src/consumers/build/Debug/outDebug"
+    }
+  ]
+}
