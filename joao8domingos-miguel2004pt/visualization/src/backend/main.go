@@ -32,6 +32,14 @@ var sensorNames = map[uint8]string{
 	schema.SensorCPUUsage:   "CPU Usage (%)",
 	schema.SensorQueueSize:  "Queue Size",
 	schema.SensorTickHealth: "Tick Health (ms)",
+	schema.SensorCPUCore1:   "CPU Core 1 (%)",
+}
+
+func isMetric(sensorID uint8) bool {
+	return sensorID == schema.SensorCPUUsage ||
+		sensorID == schema.SensorCPUCore1 ||
+		sensorID == schema.SensorQueueSize ||
+		sensorID == schema.SensorTickHealth
 }
 
 func decodePayload(data []byte) ([]*schema.SensorPayload, error) {
@@ -42,25 +50,42 @@ func decodePayload(data []byte) ([]*schema.SensorPayload, error) {
 	baseTimestampUs := binary.LittleEndian.Uint64(data[0:8])
 
 	remaining := data[8:]
-	if len(remaining)%5 != 0 {
-		return nil, fmt.Errorf("payload inválido após base timestamp: %d bytes", len(remaining))
-	}
-
 	var payloads []*schema.SensorPayload
-	for i := 0; i < len(remaining); i += 5 {
+
+	for i := 0; i < len(remaining); {
+		// Tamanho mínimo: 5 bytes (id + delta + value)
+		if i+5 > len(remaining) {
+			return nil, fmt.Errorf("payload truncado no offset %d", i)
+		}
+
 		sensorID := remaining[i]
 		deltaUs := binary.LittleEndian.Uint16(remaining[i+1 : i+3])
 		valueScaled := binary.LittleEndian.Uint16(remaining[i+3 : i+5])
+
+		var deviceID uint16
+		fieldSize := 5
+
+		if isMetric(sensorID) {
+			if i+7 > len(remaining) {
+				return nil, fmt.Errorf("payload truncado para métrica 0x%02X no offset %d", sensorID, i)
+			}
+			deviceID = binary.LittleEndian.Uint16(remaining[i+5 : i+7])
+			fieldSize = 7
+		}
+
+		i += fieldSize
 
 		timestampUs := baseTimestampUs + uint64(deltaUs)
 		timestampS := uint32(timestampUs / 1_000_000)
 
 		payloads = append(payloads, &schema.SensorPayload{
 			SensorID:  sensorID,
+			DeviceID:  deviceID,
 			Value:     unscaleValue(sensorID, valueScaled),
 			Timestamp: timestampS,
 		})
 	}
+
 	return payloads, nil
 }
 
@@ -120,6 +145,7 @@ func makeMessageHandler(influx *influxdb3.Client) mqtt.MessageHandler {
 				map[string]string{
 					"sensor_id":   fmt.Sprintf("%d", payload.SensorID),
 					"sensor_name": name,
+					"device_id":   fmt.Sprintf("0x%04X", payload.DeviceID), // útil para métricas
 				},
 				map[string]interface{}{
 					"value": payload.Value,
@@ -153,7 +179,7 @@ func main() {
 	client := mqtt.NewClient(opts) // Cria o cliente MQTT
 
 	token := client.Connect() // Conecta ao broker MQTT
-	token.Wait() // Aguarda a conexão ser estabelecida
+	token.Wait()              // Aguarda a conexão ser estabelecida
 
 	if token.Error() != nil {
 		log.Fatalf("Failed to connect to MQTT broker: %v", token.Error())
@@ -162,7 +188,7 @@ func main() {
 	defer client.Disconnect(250) // Desconecta do broker MQTT ao finalizar
 
 	token = client.Subscribe(topic, 1, makeMessageHandler(influx)) // Inscreve-se no tópico MQTT com o handler que escreve no InfluxDB
-	token.Wait() // Aguarda a inscrição ser confirmada
+	token.Wait()                                                   // Aguarda a inscrição ser confirmada
 
 	if token.Error() != nil {
 		log.Fatalf("Failed to subscribe to topic '%s': %v", topic, token.Error())
@@ -170,9 +196,9 @@ func main() {
 
 	log.Printf("Subscribed to topic '%s', waiting for messages...\n", topic)
 
-	sigChan := make(chan os.Signal, 1) // Aguarda sinais de interrupção para encerrar o programa graciosamente
+	sigChan := make(chan os.Signal, 1)                    // Aguarda sinais de interrupção para encerrar o programa graciosamente
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM) // Bloqueia até receber um sinal de interrupção
-	<-sigChan // Quando um sinal de interrupção for recebido, o programa continuará aqui e fará a limpeza necessária
+	<-sigChan                                             // Quando um sinal de interrupção for recebido, o programa continuará aqui e fará a limpeza necessária
 
 	log.Println("Shutting down...")
 }

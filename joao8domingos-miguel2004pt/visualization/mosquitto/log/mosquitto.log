@@ -1367,3 +1367,20 @@ To fix this, use `chmod 0700 /mosquitto/config/passwd`.
 1778599445: New connection from 192.168.65.1:27411 on port 1883.
 1778599445: Protocol error from 192.168.65.1:27411: First packet not CONNECT (47).
 1778599445: Client 192.168.65.1 [192.168.65.1:27411] disconnected: protocol error.
+1778662126: mosquitto version 2.1.2 starting
+1778662126: Config loaded from /mosquitto/config/mosquitto.conf.
+1778662126: Bridge support available.
+1778662126: Persistence support available.
+1778662126: TLS support available.
+1778662126: TLS-PSK support available.
+1778662126: Websockets support available.
+1778662126: Warning: File /mosquitto/config/passwd has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwd`.
+
+1778662126: Plugin builtin-security has registered to receive 'basic-auth' events.
+1778662126: Opening ipv4 listen socket on port 1883.
+1778662126: Opening ipv6 listen socket on port 1883.
+1778662126: mosquitto version 2.1.2 running
+1778662127: New connection from 172.19.0.5:33548 on port 1883.
+1778662127: New client connected from 172.19.0.5:33548 as backend-subscriber (p4, c1, k30, u'joao').
+1778663926: Saving in-memory database to /mosquitto/data//mosquitto.db.
