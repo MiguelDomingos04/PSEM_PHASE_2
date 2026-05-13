@@ -1,0 +1,1 @@
+idb3.004.l=\Be{"catalog_batch":{"Node":{"time_ns":1776352618696718507,"node_catalog_id":0,"node_id":"node0","ops":[{"StopNode":{"node_id":"node0","stopped_time_ns":1776352618696718507,"process_uuid":"d038e972-4001-421f-abc5-66de65c7570e"}}]}},"sequence_number":74}

@@ -1,0 +1,85 @@
+# You will assemble your pipeline stack in this file.
+# Make sure to read more about Docker Compose if you are new to it.
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    hostname: mosquitto
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    restart: unless-stopped
+    volumes: 
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/passwd:/mosquitto/config/passwd
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+
+  influxdb3-core:
+    container_name: influxdb3-core
+    image: quay.io/influxdb/influxdb3-core:latest
+    ports:
+      - "8181:8181"
+    restart: unless-stopped
+    command:
+      - serve
+      - --node-id=node0
+      - --object-store=file
+      - --data-dir=/var/lib/influxdb3/data
+      - --admin-token-file=/run/secrets/admin-token.json
+      - --wal-flush-interval=100ms
+    volumes:
+      - ./influxdb3/data:/var/lib/influxdb3/data
+      - ./admin-token.json:/run/secrets/admin-token.json:ro
+  
+  influxdb-explorer:
+    container_name: influxdb-explorer
+    image: influxdata/influxdb3-ui:latest
+    ports:
+      - "8888:80"
+    volumes:
+      - ./influxdb3-ui/db:/db:rw
+      - ./influxdb3-ui/config:/app-root/config:ro
+    environment:
+      SESSION_SECRET_KEY: ${SESSION_SECRET_KEY}
+    command: ["--mode=admin"]
+    restart: unless-stopped
+    depends_on:
+      - influxdb3-core
+  
+  backend:
+    container_name: backend
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+    depends_on:
+      - mosquitto
+      - influxdb3-core
+  
+  #generator:
+    #container_name: generator
+    #build:
+      #context: ./src
+      #dockerfile: Dockerfile_GEN
+    #restart: unless-stopped
+    #depends_on:
+      #- mosquitto 
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    depends_on:
+      - influxdb3-core
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=500ms

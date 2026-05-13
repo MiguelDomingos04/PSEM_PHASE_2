@@ -1,0 +1,5 @@
+{
+  "DEFAULT_INFLUX_SERVER": "http://influxdb3-core:8181",
+  "DEFAULT_INFLUX_DATABASE": "telemetry",
+  "DEFAULT_API_TOKEN": "apiv3_61spKjNfyc6n6kZm1a8-XSr37YWxYFNfuX3k-mSFmI5L08JyPRw1CD2HGDKrtZNW985g9pd_w1OMyxfbEJhh2g"
+}

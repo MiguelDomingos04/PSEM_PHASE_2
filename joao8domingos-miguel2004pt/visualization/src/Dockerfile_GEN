@@ -1,0 +1,22 @@
+FROM golang:1.26-alpine AS builder
+
+WORKDIR /gen
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copiar o código fonte
+COPY schema/ ./schema/
+COPY generator/ ./generator/
+
+# Compilar o binário
+RUN go build -o generator ./generator/generator.go
+
+# Fase 2: imagem final minimalista
+FROM alpine:latest
+
+WORKDIR /gen
+
+COPY --from=builder /gen/generator .
+
+CMD ["./generator"]
