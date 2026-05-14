@@ -17,7 +17,7 @@ import (
 
 const (
 	broker   = "tcp://mosquitto:1883"
-	topic    = "telemetry/sensors"
+	topic    = "psem/telemetry/stream"
 	clientID = "backend-subscriber"
 )
 

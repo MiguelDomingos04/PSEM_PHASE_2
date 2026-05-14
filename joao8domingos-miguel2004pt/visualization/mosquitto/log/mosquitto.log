@@ -1384,3 +1384,213 @@ To fix this, use `chmod 0700 /mosquitto/config/passwd`.
 1778662127: New connection from 172.19.0.5:33548 on port 1883.
 1778662127: New client connected from 172.19.0.5:33548 as backend-subscriber (p4, c1, k30, u'joao').
 1778663926: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778671733: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778677486: Client backend-subscriber [172.19.0.5:33548] disconnected.
+1778677487: mosquitto version 2.1.2 terminating
+1778677487: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778677521: mosquitto version 2.1.2 starting
+1778677521: Config loaded from /mosquitto/config/mosquitto.conf.
+1778677521: Bridge support available.
+1778677521: Persistence support available.
+1778677521: TLS support available.
+1778677521: TLS-PSK support available.
+1778677521: Websockets support available.
+1778677521: Warning: File /mosquitto/config/passwd has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwd`.
+
+1778677521: Plugin builtin-security has registered to receive 'basic-auth' events.
+1778677521: Opening ipv4 listen socket on port 1883.
+1778677521: Opening ipv6 listen socket on port 1883.
+1778677521: mosquitto version 2.1.2 running
+1778677521: New connection from 172.19.0.6:56636 on port 1883.
+1778677521: New client connected from 172.19.0.6:56636 as backend-subscriber (p4, c1, k30, u'joao').
+1778677586: Client backend-subscriber [172.19.0.6:56636] disconnected.
+1778677587: mosquitto version 2.1.2 terminating
+1778677587: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778677592: mosquitto version 2.1.2 starting
+1778677592: Config loaded from /mosquitto/config/mosquitto.conf.
+1778677592: Bridge support available.
+1778677592: Persistence support available.
+1778677592: TLS support available.
+1778677592: TLS-PSK support available.
+1778677592: Websockets support available.
+1778677592: Warning: File /mosquitto/config/passwd has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwd`.
+
+1778677592: Plugin builtin-security has registered to receive 'basic-auth' events.
+1778677592: Opening ipv4 listen socket on port 1883.
+1778677592: Opening ipv6 listen socket on port 1883.
+1778677592: mosquitto version 2.1.2 running
+1778677593: New connection from 172.19.0.4:34852 on port 1883.
+1778677593: New client connected from 172.19.0.4:34852 as backend-subscriber (p4, c1, k30, u'joao').
+1778677658: Client backend-subscriber [172.19.0.4:34852] disconnected.
+1778677659: New connection from 172.19.0.4:52282 on port 1883.
+1778677659: New client connected from 172.19.0.4:52282 as backend-subscriber (p4, c1, k30, u'joao').
+1778678050: Client backend-subscriber [172.19.0.4:52282] disconnected.
+1778678051: mosquitto version 2.1.2 terminating
+1778678051: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778679450: mosquitto version 2.1.2 starting
+1778679450: Config loaded from /mosquitto/config/mosquitto.conf.
+1778679450: Bridge support available.
+1778679450: Persistence support available.
+1778679450: TLS support available.
+1778679450: TLS-PSK support available.
+1778679450: Websockets support available.
+1778679450: Warning: File /mosquitto/config/passwd has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwd`.
+
+1778679450: Plugin builtin-security has registered to receive 'basic-auth' events.
+1778679450: Opening ipv4 listen socket on port 1883.
+1778679450: Opening ipv6 listen socket on port 1883.
+1778679450: mosquitto version 2.1.2 running
+1778679451: New connection from 172.19.0.5:35134 on port 1883.
+1778679451: New client connected from 172.19.0.5:35134 as backend-subscriber (p4, c1, k30, u'joao').
+1778679561: New connection from 185.199.108.133:50652 on port 1883.
+1778679561: Client ESP32_413C20 [185.199.108.133:50652] disconnected: not authorised.
+1778679571: New connection from 185.199.108.133:46241 on port 1883.
+1778679571: Client ESP32_413C20 [185.199.108.133:46241] disconnected: not authorised.
+1778679585: New connection from 185.199.108.133:18661 on port 1883.
+1778679585: Client ESP32_413C20 [185.199.108.133:18661] disconnected: not authorised.
+1778679595: New connection from 185.199.108.133:42651 on port 1883.
+1778679595: Client ESP32_413C20 [185.199.108.133:42651] disconnected: not authorised.
+1778679605: New connection from 185.199.108.133:50588 on port 1883.
+1778679605: Client ESP32_413C20 [185.199.108.133:50588] disconnected: not authorised.
+1778679615: New connection from 185.199.108.133:24714 on port 1883.
+1778679615: Client ESP32_413C20 [185.199.108.133:24714] disconnected: not authorised.
+1778679625: New connection from 185.199.108.133:31570 on port 1883.
+1778679625: Client ESP32_413C20 [185.199.108.133:31570] disconnected: not authorised.
+1778679635: New connection from 185.199.108.133:63282 on port 1883.
+1778679635: Client ESP32_413C20 [185.199.108.133:63282] disconnected: not authorised.
+1778679645: New connection from 185.199.108.133:31904 on port 1883.
+1778679645: Client ESP32_413C20 [185.199.108.133:31904] disconnected: not authorised.
+1778679656: New connection from 185.199.108.133:28123 on port 1883.
+1778679656: Client ESP32_413C20 [185.199.108.133:28123] disconnected: not authorised.
+1778679690: New connection from 185.199.108.133:17077 on port 1883.
+1778679690: Client ESP32_413C20 [185.199.108.133:17077] disconnected: not authorised.
+1778679902: New connection from 185.199.108.133:53846 on port 1883.
+1778679902: Client ESP32_413C20 [185.199.108.133:53846] disconnected: not authorised.
+1778679912: New connection from 185.199.108.133:51023 on port 1883.
+1778679912: Client ESP32_413C20 [185.199.108.133:51023] disconnected: not authorised.
+1778679922: New connection from 185.199.108.133:25181 on port 1883.
+1778679922: Client ESP32_413C20 [185.199.108.133:25181] disconnected: not authorised.
+1778679932: New connection from 185.199.108.133:45917 on port 1883.
+1778679932: Client ESP32_413C20 [185.199.108.133:45917] disconnected: not authorised.
+1778679942: New connection from 185.199.108.133:33838 on port 1883.
+1778679942: Client ESP32_413C20 [185.199.108.133:33838] disconnected: not authorised.
+1778679953: New connection from 185.199.108.133:30276 on port 1883.
+1778679953: Client ESP32_413C20 [185.199.108.133:30276] disconnected: not authorised.
+1778679963: New connection from 185.199.108.133:36536 on port 1883.
+1778679963: Client ESP32_413C20 [185.199.108.133:36536] disconnected: not authorised.
+1778679973: New connection from 185.199.108.133:63317 on port 1883.
+1778679973: Client ESP32_413C20 [185.199.108.133:63317] disconnected: not authorised.
+1778679983: New connection from 185.199.108.133:64763 on port 1883.
+1778679983: Client ESP32_413C20 [185.199.108.133:64763] disconnected: not authorised.
+1778679993: New connection from 185.199.108.133:46895 on port 1883.
+1778679993: Client ESP32_413C20 [185.199.108.133:46895] disconnected: not authorised.
+1778680003: New connection from 185.199.108.133:21192 on port 1883.
+1778680003: Client ESP32_413C20 [185.199.108.133:21192] disconnected: not authorised.
+1778680010: Client backend-subscriber [172.19.0.5:35134] disconnected.
+1778680011: mosquitto version 2.1.2 terminating
+1778680011: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778680018: mosquitto version 2.1.2 starting
+1778680018: Config loaded from /mosquitto/config/mosquitto.conf.
+1778680018: Bridge support available.
+1778680018: Persistence support available.
+1778680018: TLS support available.
+1778680018: TLS-PSK support available.
+1778680018: Websockets support available.
+1778680018: Warning: File /mosquitto/config/passwd has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwd`.
+
+1778680018: Plugin builtin-security has registered to receive 'basic-auth' events.
+1778680018: Opening ipv4 listen socket on port 1883.
+1778680018: Opening ipv6 listen socket on port 1883.
+1778680018: mosquitto version 2.1.2 running
+1778680018: New connection from 172.19.0.5:60574 on port 1883.
+1778680018: New client connected from 172.19.0.5:60574 as backend-subscriber (p4, c1, k30, u'joao').
+1778680024: New connection from 185.199.108.133:54290 on port 1883.
+1778680024: Client ESP32_413C20 [185.199.108.133:54290] disconnected: not authorised.
+1778680034: New connection from 185.199.108.133:47547 on port 1883.
+1778680034: Client ESP32_413C20 [185.199.108.133:47547] disconnected: not authorised.
+1778680045: New connection from 185.199.108.133:49330 on port 1883.
+1778680045: Client ESP32_413C20 [185.199.108.133:49330] disconnected: not authorised.
+1778680055: New connection from 185.199.108.133:37241 on port 1883.
+1778680055: Client ESP32_413C20 [185.199.108.133:37241] disconnected: not authorised.
+1778680065: New connection from 185.199.108.133:21951 on port 1883.
+1778680065: Client ESP32_413C20 [185.199.108.133:21951] disconnected: not authorised.
+1778680075: New connection from 185.199.108.133:25869 on port 1883.
+1778680075: Client ESP32_413C20 [185.199.108.133:25869] disconnected: not authorised.
+1778680085: New connection from 185.199.108.133:25584 on port 1883.
+1778680085: Client ESP32_413C20 [185.199.108.133:25584] disconnected: not authorised.
+1778680095: New connection from 185.199.108.133:45702 on port 1883.
+1778680095: Client ESP32_413C20 [185.199.108.133:45702] disconnected: not authorised.
+1778680105: New connection from 185.199.108.133:43646 on port 1883.
+1778680105: Client ESP32_413C20 [185.199.108.133:43646] disconnected: not authorised.
+1778680115: New connection from 185.199.108.133:50654 on port 1883.
+1778680115: Client ESP32_413C20 [185.199.108.133:50654] disconnected: not authorised.
+1778680126: New connection from 185.199.108.133:23473 on port 1883.
+1778680126: Client ESP32_413C20 [185.199.108.133:23473] disconnected: not authorised.
+1778680136: New connection from 185.199.108.133:57167 on port 1883.
+1778680136: Client ESP32_413C20 [185.199.108.133:57167] disconnected: not authorised.
+1778680146: New connection from 185.199.108.133:63548 on port 1883.
+1778680146: Client ESP32_413C20 [185.199.108.133:63548] disconnected: not authorised.
+1778680156: New connection from 185.199.108.133:16631 on port 1883.
+1778680156: Client ESP32_413C20 [185.199.108.133:16631] disconnected: not authorised.
+1778680166: New connection from 185.199.108.133:56322 on port 1883.
+1778680166: Client ESP32_413C20 [185.199.108.133:56322] disconnected: not authorised.
+1778680176: New connection from 185.199.108.133:23194 on port 1883.
+1778680176: Client ESP32_413C20 [185.199.108.133:23194] disconnected: not authorised.
+1778680187: New connection from 185.199.108.133:57365 on port 1883.
+1778680187: Client ESP32_413C20 [185.199.108.133:57365] disconnected: not authorised.
+1778680197: New connection from 185.199.108.133:46836 on port 1883.
+1778680197: Client ESP32_413C20 [185.199.108.133:46836] disconnected: not authorised.
+1778680207: New connection from 185.199.108.133:63175 on port 1883.
+1778680207: Client ESP32_413C20 [185.199.108.133:63175] disconnected: not authorised.
+1778680217: New connection from 185.199.108.133:20640 on port 1883.
+1778680217: Client ESP32_413C20 [185.199.108.133:20640] disconnected: not authorised.
+1778680227: New connection from 185.199.108.133:48540 on port 1883.
+1778680227: Client ESP32_413C20 [185.199.108.133:48540] disconnected: not authorised.
+1778680237: New connection from 185.199.108.133:59840 on port 1883.
+1778680237: Client ESP32_413C20 [185.199.108.133:59840] disconnected: not authorised.
+1778680247: New connection from 185.199.108.133:27126 on port 1883.
+1778680247: Client ESP32_413C20 [185.199.108.133:27126] disconnected: not authorised.
+1778680257: New connection from 185.199.108.133:48112 on port 1883.
+1778680257: Client ESP32_413C20 [185.199.108.133:48112] disconnected: not authorised.
+1778680268: New connection from 185.199.108.133:38662 on port 1883.
+1778680268: Client ESP32_413C20 [185.199.108.133:38662] disconnected: not authorised.
+1778680278: New connection from 185.199.108.133:19552 on port 1883.
+1778680278: Client ESP32_413C20 [185.199.108.133:19552] disconnected: not authorised.
+1778680288: New connection from 185.199.108.133:33427 on port 1883.
+1778680288: Client ESP32_413C20 [185.199.108.133:33427] disconnected: not authorised.
+1778680298: New connection from 185.199.108.133:36932 on port 1883.
+1778680298: Client ESP32_413C20 [185.199.108.133:36932] disconnected: not authorised.
+1778680308: New connection from 185.199.108.133:48723 on port 1883.
+1778680308: Client ESP32_413C20 [185.199.108.133:48723] disconnected: not authorised.
+1778680318: New connection from 185.199.108.133:29142 on port 1883.
+1778680318: Client ESP32_413C20 [185.199.108.133:29142] disconnected: not authorised.
+1778680329: New connection from 185.199.108.133:20776 on port 1883.
+1778680329: Client ESP32_413C20 [185.199.108.133:20776] disconnected: not authorised.
+1778680339: New connection from 185.199.108.133:34373 on port 1883.
+1778680339: Client ESP32_413C20 [185.199.108.133:34373] disconnected: not authorised.
+1778680349: New connection from 185.199.108.133:42003 on port 1883.
+1778680349: Client ESP32_413C20 [185.199.108.133:42003] disconnected: not authorised.
+1778680359: New connection from 185.199.108.133:31216 on port 1883.
+1778680359: Client ESP32_413C20 [185.199.108.133:31216] disconnected: not authorised.
+1778680369: New connection from 185.199.108.133:19908 on port 1883.
+1778680369: Client ESP32_413C20 [185.199.108.133:19908] disconnected: not authorised.
+1778680387: New connection from 185.199.108.133:54593 on port 1883.
+1778680387: Client ESP32_413C20 [185.199.108.133:54593] disconnected: not authorised.
+1778684737: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778686811: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778690025: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778691826: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778693627: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778695428: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778697229: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778699030: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778700929: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778702730: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778704530: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1778705019: Client backend-subscriber [172.19.0.5:60574] disconnected.
+1778705019: mosquitto version 2.1.2 terminating
+1778705019: Saving in-memory database to /mosquitto/data//mosquitto.db.
