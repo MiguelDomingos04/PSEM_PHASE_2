@@ -16,6 +16,8 @@
 #define WIFI_PASSWORD  "hamud123"
 #define BROKER_URI     "mqtt://10.92.8.76:1883"
 #define MQTT_TOPIC     "psem/telemetry/stream"
+#define MQTT_USERNAME  "joao"
+#define MQTT_PASSWORD  "2004"
 
 extern "C" void app_main(void)
 {

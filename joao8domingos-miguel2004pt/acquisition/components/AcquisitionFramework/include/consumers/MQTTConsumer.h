@@ -37,6 +37,9 @@ private:
     const char *broker_uri;
     const char *topic;
 
+    const char *mqtt_username;
+    const char *mqtt_password;
+
     void     wifiInit();
     void     mqttInit();
     void     packTopic(const topic_t1 &t);
@@ -50,7 +53,7 @@ private:
 
 public:
     MQTTConsumer(const char *ssid, const char *password,
-                 const char *broker_uri, const char *topic);
+                 const char *broker_uri, const char *topic, const char *mqtt_username, const char *mqtt_password);
 
     void setup()                       override;
     void run()                         override;

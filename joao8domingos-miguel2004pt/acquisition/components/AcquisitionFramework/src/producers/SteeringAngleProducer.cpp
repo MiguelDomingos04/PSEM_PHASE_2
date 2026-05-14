@@ -12,6 +12,7 @@
 #include "esp_timer.h"
 #include "driver/spi_master.h"
 #include <cstdint>
+#include "time_of_day.h"
 
 #define TAG           "SteeringAngleProducer"
 #define SAMPLE_MS     100 // frequência de amostragem de 10 Hz — o AMT22B é rápido o suficiente para fornecer leituras em tempo real do ângulo de direção, e uma frequência de 10 Hz é adequada para capturar as mudanças no ângulo de direção sem gerar um volume excessivo de dados para processar. Esta frequência permite que o sistema responda rapidamente às mudanças na direção do veículo, proporcionando uma experiência de condução mais fluida e responsiva, enquanto ainda mantém a eficiência do processamento dos dados.
@@ -66,7 +67,7 @@ void SteeringAngleProducer::run()
 
    topic_t1 topic = {
         .producer_id  = producerId,
-        .timestamp_us = static_cast<uint64_t>(esp_timer_get_time()),
+        .timestamp_us = static_cast<uint64_t>(TimeReader::getCurrentTimeUs()),
         .value        = value,
     };
 

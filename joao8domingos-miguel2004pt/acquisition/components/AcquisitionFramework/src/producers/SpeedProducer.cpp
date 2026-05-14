@@ -7,6 +7,7 @@
 #include "esp_attr.h"
 #include <cstdint>
 #include <cmath>
+#include "time_of_day.h"
 
 #define TAG            "SpeedProducer"
 #define SAMPLE_MS      100
@@ -47,9 +48,11 @@ void SpeedProducer::run()
         current_rpm = randomWalkInt(current_rpm, MAX_DELTA_RPM, MIN_RPM, MAX_RPM);
         speed_kmh   = rpmToKmh(current_rpm);
 
+       
+       ESP_LOGI(TAG, "--------------------------------> TIME=%llu ", static_cast<uint64_t>(TimeReader::getCurrentTimeUs()));
        topic_t1 topic = {
             .producer_id  = producerId,
-            .timestamp_us = static_cast<uint64_t>(esp_timer_get_time()),
+            .timestamp_us = static_cast<uint64_t>(TimeReader::getCurrentTimeUs()),
             .value        = speed_kmh,
         };
 
@@ -65,7 +68,7 @@ void SpeedProducer::run()
 
        topic_t1 topic = {
             .producer_id  = producerId,
-            .timestamp_us = static_cast<uint64_t>(esp_timer_get_time()),
+            .timestamp_us = static_cast<uint64_t>(TimeReader::getCurrentTimeUs()),
             .value        = speed_kmh,
         };
 

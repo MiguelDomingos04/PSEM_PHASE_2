@@ -7,6 +7,7 @@
 #include "soc/soc_caps.h"
 #include <cstdint>
 #include <cmath>
+#include "time_of_day.h"
 
 #define TAG          "TempProducer"
 #define SAMPLE_MS    100
@@ -59,7 +60,7 @@ void TempProducer::run()
 
        topic_t1 topic = {
             .producer_id  = producerId,
-            .timestamp_us = static_cast<uint64_t>(esp_timer_get_time()),
+            .timestamp_us = static_cast<uint64_t>(TimeReader::getCurrentTimeUs()),
             .value        = current_value,
         };
 
@@ -149,7 +150,7 @@ void TempProducer::readADC()
 
        topic_t1 topic = {
             .producer_id  = producerId,
-            .timestamp_us = static_cast<uint64_t>(esp_timer_get_time()),
+            .timestamp_us = static_cast<uint64_t>(TimeReader::getCurrentTimeUs()),
             .value        = temp_c,
         };
 

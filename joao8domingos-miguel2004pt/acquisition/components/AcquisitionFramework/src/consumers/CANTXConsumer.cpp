@@ -5,6 +5,7 @@
 #include "esp_timer.h"
 #include "driver/gpio.h"
 #include <cstring>
+#include "time_of_day.h"
 
 #define TAG "CANTXConsumer"
 
@@ -33,7 +34,7 @@ void CANTXConsumer::setup()
     ESP_ERROR_CHECK(twai_new_node_onchip(&node_config, &node_hdl));
     ESP_ERROR_CHECK(twai_node_enable(node_hdl));
 
-    base_timestamp_us = (uint64_t)esp_timer_get_time();
+    base_timestamp_us = (uint64_t)TimeReader::getCurrentTimeUs();
     sendSync();
 
     ESP_LOGI(TAG, "CANTXConsumer iniciado — TX=GPIO%d RX=GPIO%d",
@@ -45,7 +46,7 @@ void CANTXConsumer::setup()
 void CANTXConsumer::run()
 {
     //envia de 10 em 10 segundos um sync para manter o timestamp base atualizado, mesmo que não haja mensagens a enviar. Isto é importante para garantir que os deltas de tempo das mensagens subsequentes não se tornem muito grandes, o que poderia levar a erros de sincronização no receptor. O envio regular de syncs mantém a linha do tempo dos eventos precisa e permite que o sistema se recupere rapidamente de quaisquer interrupções ou atrasos na comunicação.
-    uint32_t now_ms = (uint32_t)(esp_timer_get_time() / 1000);
+    uint32_t now_ms = (uint32_t)(TimeReader::getCurrentTimeUs() / 1000);
     if ((now_ms - last_sync_ms) >= CAN_SYNC_MS) {
         sendSync();
     }
@@ -64,7 +65,7 @@ void CANTXConsumer::consume(const topic_t1 &t)
 void CANTXConsumer::sendSync()
 {
  
-    last_sync_ms = (uint32_t)(esp_timer_get_time() / 1000);
+    last_sync_ms = (uint32_t)(TimeReader::getCurrentTimeUs() / 1000);
 
     uint8_t buf[8];
     memcpy(buf, &base_timestamp_us, sizeof(uint64_t));

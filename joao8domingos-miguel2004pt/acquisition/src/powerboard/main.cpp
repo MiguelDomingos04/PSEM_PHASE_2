@@ -16,6 +16,8 @@
 #define WIFI_PASSWORD  "hamud123"
 #define BROKER_URI     "mqtt://10.92.8.76:1883"
 #define MQTT_TOPIC     "psem/telemetry/stream"
+#define MQTT_USERNAME  "joao"
+#define MQTT_PASSWORD  "2004"
 
 extern "C" void app_main(void)
 {
@@ -30,7 +32,7 @@ extern "C" void app_main(void)
 
     // Consumers — LCD, MQTT e CANTXConsumer que envia dados para o outro ESP32
     static LCDConsumer   lcdConsumer;
-    static MQTTConsumer  mqttConsumer(WIFI_SSID, WIFI_PASSWORD, BROKER_URI, MQTT_TOPIC);
+    static MQTTConsumer  mqttConsumer(WIFI_SSID, WIFI_PASSWORD, BROKER_URI, MQTT_TOPIC, MQTT_USERNAME, MQTT_PASSWORD);
     //static CANTXConsumer canTxConsumer;
 
     // Registar consumers ANTES dos producers

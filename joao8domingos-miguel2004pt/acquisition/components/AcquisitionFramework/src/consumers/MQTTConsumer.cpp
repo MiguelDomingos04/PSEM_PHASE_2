@@ -6,11 +6,17 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "lwip/inet.h"
+#include "esp_netif_sntp.h"
+#include "esp_sntp.h"
+#include <time.h>        // Para time_t, struct tm, time() e localtime_r
+#include <sys/time.h>    // Para funções auxiliares de sistema de tempo
+#include "esp_log.h"     // Para as macros ESP_LOGW e ESP_LOGI
+
 
 #define TAG "MQTTConsumer"
 
 MQTTConsumer::MQTTConsumer(const char *ssid, const char *password,
-                            const char *broker_uri, const char *topic)
+                            const char *broker_uri, const char *topic, const char *mqtt_username, const char *mqtt_password)
     : ssid(ssid), password(password), broker_uri(broker_uri), topic(topic)
 {
     memset(buffer, 0, sizeof(buffer));
@@ -117,16 +123,34 @@ void MQTTConsumer::consume(const topic_t1 &t)
         base_set          = true;
     }
 
+    /*
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+
+    if (timeinfo.tm_year < (2026 - 1900)) { // 2026 é o ano atual
+        ESP_LOGW("MQTT", "Aguardando sincronização do relógio (NTP)...");
+        vTaskDelay(pdMS_TO_TICKS(2000)); // Espera 2 segundos e tenta de novo
+        return; // Sai da função e espera a próxima execução do scheduler
+    }
+    */
+
     //se o delta a meio ficar com um valor superior ao 0xFFFF, é necessaário enviar o pacote que se estava a criar e 
     if (t.timestamp_us - base_timestamp_us > 0xFFFF) {
         // Fazer flush do buffer antes de mudar a base
         if (count > 0) {
             memcpy(buffer, &base_timestamp_us, sizeof(uint64_t));
             int payload_size = (int)(sizeof(uint64_t) + buffer_offset);
-            esp_mqtt_client_publish(mqtt_client, topic,
+            int msg_id = esp_mqtt_client_publish(mqtt_client, topic,
                                     (const char *)buffer, payload_size, 1, 0);
             
-            ESP_LOGI(TAG, "Buffer publicado ");                     
+            
+            if (msg_id >= 0) {
+                ESP_LOGI(TAG, "Buffer publicado ");
+            } else {
+                ESP_LOGE(TAG, "Falha ao publicar — msg_id");
+            }                     
             count         = 0;
             buffer_offset = 0;
             memset(buffer, 0, sizeof(buffer));
@@ -259,7 +283,14 @@ uint16_t MQTTConsumer::scaleValue(uint8_t producer_id, float value)
 
 //  wifiInit 
 void MQTTConsumer::wifiInit()
-{
+{   
+    const char* server = "pool.ntp.org";
+    esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG(server);
+    esp_netif_sntp_init(&config); // Inicializa o serviço SNTP (Simple Network Time Protocol) para sincronizar o relógio do dispositivo com servidores de tempo na internet. A sincronização de tempo é crucial para garantir que os timestamps dos tópicos consumidos sejam precisos e consistentes, permitindo uma melhor análise e correlação dos dados recebidos pelo MQTTConsumer, especialmente em cenários onde a ordem e o timing dos eventos são importantes.
+    //setenv("TZ", "GMT0BST,M3.5.0/1,M10.5.0/2", 1);
+    setenv("TZ", "WET0WEST,M3.5.0/1,M10.5.0/2", 1);
+    tzset();
+
     wifi_event_group = xEventGroupCreate(); // Cria um grupo de eventos para sincronizar a conexão WiFi. Este grupo é usado para sinalizar quando o dispositivo está conectado à rede WiFi, permitindo que outras partes do código aguardem essa condição antes de tentar usar a conexão de rede, garantindo uma operação mais robusta e evitando erros relacionados à falta de conectividade.
 
     ESP_ERROR_CHECK(esp_netif_init()); // Inicializa a pilha de rede TCP/IP do ESP-IDF, preparando o sistema para operações de rede. Esta função é essencial para configurar as interfaces de rede e garantir que o dispositivo possa se comunicar com outros dispositivos na rede, como o broker MQTT, permitindo a troca de dados e a funcionalidade de rede necessária para o MQTTConsumer operar corretamente.
@@ -290,6 +321,8 @@ void MQTTConsumer::mqttInit()
 {
     esp_mqtt_client_config_t mqtt_cfg = {}; // Estrutura de configuração para o cliente MQTT, que inclui os parâmetros necessários para se conectar a um broker MQTT específico. Esta estrutura é preenchida com o URI do broker fornecido ao criar o MQTTConsumer, permitindo que o dispositivo saiba para onde enviar as mensagens MQTT, garantindo que o MQTTConsumer possa estabelecer uma conexão com o broker e realizar suas funções de consumo de dados.
     mqtt_cfg.broker.address.uri = broker_uri; // Configura o URI do broker MQTT na estrutura de configuração, permitindo que o cliente MQTT saiba para onde se conectar. O URI inclui o protocolo (mqtt://), o endereço IP ou hostname do broker e a porta, garantindo que o MQTTConsumer possa estabelecer uma conexão com o broker MQTT correto e realizar suas funções de consumo de dados.
+    mqtt_cfg.credentials.username                  = mqtt_username;
+    mqtt_cfg.credentials.authentication.password   = mqtt_password;
 
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg); // Inicializa o cliente MQTT com a configuração especificada, preparando o sistema para se conectar ao broker MQTT. Esta função é essencial para configurar o cliente MQTT e garantir que ele esteja pronto para estabelecer uma conexão com o broker, permitindo que o MQTTConsumer realize suas funções de consumo de dados e publique mensagens no tópico configurado.
     //ESP_ERROR_CHECK(esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID, mqttEventHandler, this)); // Registra um handler para eventos relacionados ao MQTT, permitindo que o MQTTConsumer responda a mudanças no estado da conexão MQTT, como conexões, desconexões, publicações e erros. Este handler é essencial para implementar uma lógica de reconexão automática e para monitorar o estado da conexão MQTT, garantindo que o MQTTConsumer possa operar de forma robusta mesmo em condições de rede instáveis e possa reagir adequadamente a eventos relacionados ao MQTT.

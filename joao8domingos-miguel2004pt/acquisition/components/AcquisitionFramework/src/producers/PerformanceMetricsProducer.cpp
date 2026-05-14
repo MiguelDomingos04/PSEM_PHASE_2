@@ -4,6 +4,7 @@
 //#include "freertos/task.h"
 #include "esp_mac.h"
 #define TAG "PerformanceMetrics"
+#include "time_of_day.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,7 +68,7 @@ void PerformanceMetricsProducer::sendMetric(uint8_t metric_id, float value)
 {
    topic_t1 topic = {
         .producer_id  = metric_id,
-        .timestamp_us = static_cast<uint64_t>(esp_timer_get_time()),
+        .timestamp_us = static_cast<uint64_t>(TimeReader::getCurrentTimeUs()),
         .value        = value,
         .device_id    = device_id,  // != 0 → consumers serializam os 2 bytes extra
     };
@@ -87,7 +88,7 @@ float PerformanceMetricsProducer::estimateCpuUsage(int core_id)
     // Tempo total que o CPU passou em repouso (idle)
     uint32_t idle_ticks  = ulTaskGetIdleRunTimeCounterHandle(idle_task_handle);
     // Tempo total do sistema (convertido para milissegundos/unidade de tick)
-    uint32_t total_ticks = (uint32_t)(esp_timer_get_time() / 1000);
+    uint32_t total_ticks = (uint32_t)(TimeReader::getCurrentTimeUs() / 1000);
 
     // Cálculo da variação (delta) entre a leitura atual e a anterior
     uint32_t delta_idle  = idle_ticks  - last_idle_ticks[core_id];
