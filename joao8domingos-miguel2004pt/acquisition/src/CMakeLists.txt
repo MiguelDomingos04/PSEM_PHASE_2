@@ -1,7 +1,7 @@
-if(DEFINED ENV{BOARD} AND "$ENV{BOARD}" STREQUAL "board2")
-    set(BOARD_SRC "board2.cpp")
-else()
-    set(BOARD_SRC "board1.cpp")
-endif()
+message(STATUS "SRC CMake: Building target '${TARGET_SUBDIR}'")
 
-idf_component_register(SRCS "${BOARD_SRC}")
+idf_component_register(
+    SRCS "${TARGET_SUBDIR}/main.cpp"
+    INCLUDE_DIRS "${TARGET_SUBDIR}"
+    REQUIRES "AcquisitionFramework"
+)
