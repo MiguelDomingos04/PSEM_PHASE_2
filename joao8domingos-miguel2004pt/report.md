@@ -255,15 +255,3 @@ As queries do dashboard foram divididas em dois grupos:
 
 Criou-se novas visualizations para as métricas do sistema (tanto time series como Gauge/Stat).
 No caso da métrica da medição do uso do CPU, para as time series apresenta-se na mesma visualization o consumo de ambos os cores.
-
-**Novas panels**
-
-| Panel | Query | Tipo |
-|-------|-------|------|
-| CPU Usage (%) | `sensor_id IN ('6','9')` + `device_id` | Time series (2 linhas) |
-| Queue Size | `sensor_id = '7'` + `device_id` | Stat |
-| Tick Health (ms) | `sensor_id = '8'` + `device_id` | Stat |
-
-O intervalo de tempo das queries de histórico usa `now() - interval '10 minutes'`
-para manter o gráfico relevante, enquanto as panels de valor instantâneo usam
-`ORDER BY time DESC LIMIT 1`.
