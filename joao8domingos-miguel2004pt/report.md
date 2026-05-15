@@ -173,32 +173,111 @@ ESP32 ──Wi-Fi──→ mosquitto (MQTT broker)
               InfluxDB3 Core (time-series database)
                         ↓
                    Grafana (dashboards em tempo real)
-                        ↓
-             InfluxDB Explorer (administração)
 ```
 
-### 5.2 Mosquitto
+### 5.1 Refatorização do Backend
 
-**Razão da autenticação obrigatória:** O broker está configurado com `allow_anonymous false` e um ficheiro `passwd` com credenciais `joao:2004`. Sem autenticação, qualquer dispositivo na rede local poderia publicar dados arbitrários na telemetria. O ESP32 e o backend Go autenticam com as mesmas credenciais.
+O backend em Go foi atualizado para suportar o novo formato binário compacto
+introduzido na Phase 3. As principais alterações foram:
 
-### 5.3 Backend Go
+**Formato do payload MQTT**
 
-O backend subscreve o tópico `psem/telemetry/stream`, decodifica o payload binário e escreve os pontos na base de dados InfluxDB3.
+O payload deixou de ter campos de tamanho fixo e passou a ter tamanho variável
+por entrada, dependendo do tipo de dado:
 
-**Razão do Go:** Linguagem compilada com excelente suporte para concorrência via goroutines, adequada para processar streams de dados em tempo real com baixa latência. Os SDKs oficiais do cliente MQTT (paho.mqtt.golang) e do InfluxDB3 estão disponíveis em Go e são mantidos activamente.
+| Tipo | Formato | Tamanho |
+|------|---------|---------|
+| Sensor físico | `[id:1][delta_us:2][value_scaled:2]` | 5 bytes |
+| Métrica de sistema | `[id:1][delta_us:2][value_scaled:2][device_id:2]` | 7 bytes |
 
-**Decodificação do payload:** O backend lê os 8 bytes do timestamp base e itera os campos variáveis. O tamanho de cada campo (5 ou 7 bytes) é determinado pela função `isMetric(sensorID)`, que verifica se o ID corresponde a uma métrica de sistema. O timestamp absoluto de cada leitura é reconstruído como `base_timestamp_us + delta_us`.
+O cabeçalho de cada pacote contém sempre um `base_timestamp_us` de 8 bytes,
+a partir do qual os timestamps individuais são reconstruídos via delta.
 
-**Razão do tag `device_id` no InfluxDB:** O `device_id` é armazenado como tag (não como field) no InfluxDB3. Os tags são indexados, o que permite filtrar métricas por ESP32 de origem em queries Grafana sem varredura completa da base de dados.
+**Função `decodePayload`**
 
-**Inversão da escala no backend:** O backend aplica a mesma lógica de inversão de escala que o CANRXProducer, recuperando os valores físicos originais (ex: 2520 → 25.2 V) antes de escrever no InfluxDB. Assim, o Grafana trabalha directamente com valores físicos reais.
+A função de deserialização foi reescrita para lidar com entradas de tamanho
+variável. Em vez de iterar com um offset fixo de 5 bytes, lê o `sensor_id`
+de cada entrada e determina o tamanho do campo dinamicamente:
 
-### 5.4 InfluxDB3 Core
+```go
+func isMetric(sensorID uint8) bool {
+    return sensorID == schema.SensorCPUUsage ||
+        sensorID == schema.SensorCPUCore1   ||
+        sensorID == schema.SensorQueueSize  ||
+        sensorID == schema.SensorTickHealth
+}
+```
 
-**Razão da escolha:** InfluxDB3 é uma base de dados de séries temporais nativa, optimizada para escritas de alta frequência com timestamps de precisão sub-segundo. O modelo de dados (measurement, tags, fields, timestamp) mapeia directamente para leituras de sensores. A versão Core é open-source e adequada para deployment local.
+Para métricas, são lidos 7 bytes em vez de 5, extraindo também o `device_id`
+que identifica qual ESP32 gerou a métrica — necessário porque ambas as boards
+publicam métricas de sistema no mesmo tópico MQTT.
 
-### 5.5 Grafana
+**Schema**
 
-**Razão da escolha:** Ferramenta standard de visualização de séries temporais com suporte nativo para InfluxDB. Permite criar dashboards em tempo real com refresh configurado a 500 ms (`GF_DASHBOARDS_MIN_REFRESH_INTERVAL=500ms`), adequado para monitorização de telemetria em pista.
+O `schema.go` foi atualizado com dois novos campos:
+- `SensorCPUCore1 = 0x09` — monitorização do segundo core do ESP32-S3
+- `DeviceID uint16` na struct `SensorPayload` — identificador da board de origem
 
+**Escrita no InfluxDB**
 
+O `device_id` é agora escrito como tag em todos os pontos de métricas,
+permitindo filtrar por board nas queries:
+
+```go
+map[string]string{
+    "sensor_id":   fmt.Sprintf("%d", payload.SensorID),
+    "sensor_name": name,
+    "device_id":   fmt.Sprintf("0x%04X", payload.DeviceID),
+}
+```
+
+### 5.2 Deploy com Docker Compose
+
+O `docker-compose.yml` mantém os cinco serviços da stack, todos prontos para
+deploy num servidor remoto sem alterações de configuração:
+
+- **mosquitto** — broker MQTT com autenticação por password
+- **influxdb3-core** — base de dados de séries temporais, com token de
+  administração montado via volume read-only
+- **influxdb-explorer** — UI de administração do InfluxDB3
+- **backend** — serviço Go compilado em dois estágios (`golang:alpine` →
+  `alpine`), subscriber MQTT e escritor no InfluxDB
+- **grafana** — dashboards em tempo real com refresh de 500ms
+
+As credenciais sensíveis (passwords MQTT, token InfluxDB, password Grafana)
+são injetadas via variáveis de ambiente, mantendo o `docker-compose.yml`
+limpo e seguro para versionar.
+
+### 5.3 Expansão do Dashboard Grafana
+
+O dashboard foi expandido para incluir as novas métricas de saúde do sistema
+introduzidas pelo `PerformanceMetricsProducer`.
+
+**Variável `device_id`**
+
+Foi criada uma variável de template do tipo Custom com os `device_id` das duas
+boards (calculados por XOR fold dos 6 bytes do MAC). Isto permite selecionar
+no dropdown do dashboard qual ESP32 se está a monitorizar, sem duplicar panels.
+
+**Separação de queries por tipo de dado**
+
+As queries do dashboard foram divididas em dois grupos:
+
+- Sensores físicos (`sensor_id` 1–5: tensão, corrente, temperatura, velocidade,
+  ângulo de direção) — filtram apenas por `sensor_id`, sem `device_id`, porque
+  cada sensor existe exclusivamente numa das boards
+- Métricas de sistema (`sensor_id` 6–9: CPU Core 0, CPU Core 1, Queue Size,
+  Tick Health) — filtram por `sensor_id` **e** `${device_id}`, porque ambas
+  as boards publicam estas métricas
+
+**Novas panels**
+
+| Panel | Query | Tipo |
+|-------|-------|------|
+| CPU Usage (%) | `sensor_id IN ('6','9')` + `device_id` | Time series (2 linhas) |
+| Queue Size | `sensor_id = '7'` + `device_id` | Stat |
+| Tick Health (ms) | `sensor_id = '8'` + `device_id` | Stat |
+
+O intervalo de tempo das queries de histórico usa `now() - interval '10 minutes'`
+para manter o gráfico relevante, enquanto as panels de valor instantâneo usam
+`ORDER BY time DESC LIMIT 1`.
