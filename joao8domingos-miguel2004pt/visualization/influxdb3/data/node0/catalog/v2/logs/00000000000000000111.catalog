@@ -1,0 +1,1 @@
+idb3.004.lÝÛM{"catalog_batch":{"Database":{"time_ns":1778751661070354464,"database_id":1,"database_name":"telemetry","ops":[{"AddColumns":{"database_name":"telemetry","database_id":1,"table_name":"sensor_data","table_id":0,"column_definitions":[{"tag":{"id":2,"column_id":4,"name":"device_id"}}],"field_family_definitions":[]}}]}},"sequence_number":111}

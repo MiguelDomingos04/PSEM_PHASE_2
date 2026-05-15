@@ -138,10 +138,10 @@ func makeMessageHandler(influx *influxdb3.Client) mqtt.MessageHandler {
 				name = fmt.Sprintf("Sensor 0x%02X", payload.SensorID)
 			}
 
-			t := time.Unix(int64(payload.Timestamp), 0) // Imprime os dados do sensor no console para depuração
-			log.Printf("[%s] %s -> %.2f\n", t.Format("15:04:05"), name, payload.Value)
+			t := time.Unix(int64(payload.Timestamp), 0) // Imprime os dados do sensor na consola para depuração
+			log.Printf("[%d][%s] %s -> %.2f\n", payload.Timestamp, t.Format("15:04:05"), name, payload.Value)
 
-			point := influxdb3.NewPoint("sensor_data",
+			point := influxdb3.NewPoint("sensor_data1",
 				map[string]string{
 					"sensor_id":   fmt.Sprintf("%d", payload.SensorID),
 					"sensor_name": name,
