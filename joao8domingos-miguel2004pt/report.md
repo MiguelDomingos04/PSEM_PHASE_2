@@ -163,14 +163,14 @@ Desvios elevados indicam que o sistema está sobrecarregado ou que uma task de a
 
 ## 5. Phase 4 — Visualization Stack
 
-A visualization stack é containerizada num Docker Compose com cinco serviços independentes:
+A visualization stack é containerizada num Docker Compose com serviços independentes:
 
 ```
 ESP32 ──Wi-Fi──→ mosquitto (MQTT broker)
                         ↓
                   Go backend (subscriber + decoder)
                         ↓
-              InfluxDB3 Core (time-series database)
+              InfluxDB (time-series database)
                         ↓
                    Grafana (dashboards em tempo real)
 ```
@@ -195,7 +195,7 @@ a partir do qual os timestamps individuais são reconstruídos via delta.
 
 **Função `decodePayload`**
 
-A função de deserialização foi reescrita para lidar com entradas de tamanho
+A função de deserialização foi reescrita para lidar com inputs de tamanho
 variável. Em vez de iterar com um offset fixo de 5 bytes, lê o `sensor_id`
 de cada entrada e determina o tamanho do campo dinamicamente:
 
@@ -208,7 +208,7 @@ func isMetric(sensorID uint8) bool {
 }
 ```
 
-Para métricas, são lidos 7 bytes em vez de 5, extraindo também o `device_id`
+Para as métricas, são lidos 7 bytes em vez de 5, extraindo também o `device_id`
 que identifica qual ESP32 gerou a métrica — necessário porque ambas as boards
 publicam métricas de sistema no mesmo tópico MQTT.
 
@@ -220,7 +220,7 @@ O `schema.go` foi atualizado com dois novos campos:
 
 **Escrita no InfluxDB**
 
-O `device_id` é agora escrito como tag em todos os pontos de métricas,
+O `device_id` é agora escrito em todos os tópicos recebidos,
 permitindo filtrar por board nas queries:
 
 ```go
@@ -231,24 +231,7 @@ map[string]string{
 }
 ```
 
-### 5.2 Deploy com Docker Compose
-
-O `docker-compose.yml` mantém os cinco serviços da stack, todos prontos para
-deploy num servidor remoto sem alterações de configuração:
-
-- **mosquitto** — broker MQTT com autenticação por password
-- **influxdb3-core** — base de dados de séries temporais, com token de
-  administração montado via volume read-only
-- **influxdb-explorer** — UI de administração do InfluxDB3
-- **backend** — serviço Go compilado em dois estágios (`golang:alpine` →
-  `alpine`), subscriber MQTT e escritor no InfluxDB
-- **grafana** — dashboards em tempo real com refresh de 500ms
-
-As credenciais sensíveis (passwords MQTT, token InfluxDB, password Grafana)
-são injetadas via variáveis de ambiente, mantendo o `docker-compose.yml`
-limpo e seguro para versionar.
-
-### 5.3 Expansão do Dashboard Grafana
+### 5.2 Expansão do Dashboard Grafana
 
 O dashboard foi expandido para incluir as novas métricas de saúde do sistema
 introduzidas pelo `PerformanceMetricsProducer`.
@@ -256,7 +239,7 @@ introduzidas pelo `PerformanceMetricsProducer`.
 **Variável `device_id`**
 
 Foi criada uma variável de template do tipo Custom com os `device_id` das duas
-boards (calculados por XOR fold dos 6 bytes do MAC). Isto permite selecionar
+boards. Isto permite selecionar
 no dropdown do dashboard qual ESP32 se está a monitorizar, sem duplicar panels.
 
 **Separação de queries por tipo de dado**
@@ -265,10 +248,13 @@ As queries do dashboard foram divididas em dois grupos:
 
 - Sensores físicos (`sensor_id` 1–5: tensão, corrente, temperatura, velocidade,
   ângulo de direção) — filtram apenas por `sensor_id`, sem `device_id`, porque
-  cada sensor existe exclusivamente numa das boards
+  cada sensor existe exclusivamente numa das boards.
 - Métricas de sistema (`sensor_id` 6–9: CPU Core 0, CPU Core 1, Queue Size,
   Tick Health) — filtram por `sensor_id` **e** `${device_id}`, porque ambas
-  as boards publicam estas métricas
+  as boards publicam estas métricas.
+
+Criou-se novas visualizations para as métricas do sistema (tanto time series como Gauge/Stat).
+No caso da métrica da medição do uso do CPU, para as time series apresenta-se na mesma visualization o consumo de ambos os cores.
 
 **Novas panels**
 
